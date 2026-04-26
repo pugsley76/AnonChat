@@ -1,251 +1,373 @@
 # AnonChat 🌌
 
-**AnonChat** is a **Stellar-based anonymous communication platform** that allows users to create groups and chat freely with strangers — **without revealing identity**. Access is powered by **Web3 wallet authentication**, ensuring privacy, decentralization, and user sovereignty.
+**AnonChat** is a **Stellar-based anonymous communication platform** that lets users create and join chat groups without revealing their identity. Authentication is powered by Web3 wallet signatures — no email, no phone number, no personal data.
 
 > Speak freely. Stay anonymous. Powered by Stellar.
 
----
-
-## 🚀 What is AnonChat?
-
-AnonChat is a decentralized, privacy-first chat application where:
-
-* Users **connect using a Web3 wallet**
-* No personal data, email, or phone number is required
-* Users can **create or join anonymous groups**
-* Messages are **end-to-end encrypted**
-* Identity is never exposed — not even to us
-
-The platform leverages **Stellar blockchain primitives** to ensure transparency, decentralization, and trustless authentication.
+[![CI](https://github.com/pugsley76/AnonChat/actions/workflows/ci.yml/badge.svg)](https://github.com/pugsley76/AnonChat/actions/workflows/ci.yml)
+[![Vercel](https://img.shields.io/badge/deployed-Vercel-black?logo=vercel)](https://anonchat-one.vercel.app)
+[![License: MIT](https://img.shields.io/badge/License-MIT-purple.svg)](LICENSE)
+[![Node.js](https://img.shields.io/badge/node-%3E%3D20.9.0-brightgreen)](https://nodejs.org)
 
 ---
 
-## 🌟 Why Stellar?
+## 🌐 Live Demo
 
-AnonChat is **built on Stellar** because it offers:
+🔗 **[https://anonchat-one.vercel.app](https://anonchat-one.vercel.app)**
 
-* ⚡ **Fast & low-cost transactions**
-* 🌍 **Global, borderless infrastructure**
-* 🔐 **Secure public-key cryptography**
-* 🧩 Perfect fit for **wallet-based authentication**
+> If the demo is unavailable, the app requires a live Supabase project and Stellar testnet account — see [Getting Started](#️-getting-started) to run it locally.
 
-Stellar enables AnonChat to remain lightweight, scalable, and censorship-resistant.
+---
 
+## 📋 Current Status
+
+### ✅ Implemented and working
+
+| Feature | Notes |
+|---|---|
+| Stellar wallet authentication | Ed25519 signature verification, nonce-based replay protection |
+| Anonymous chat rooms | Create public groups, list and search rooms |
+| Real-time messaging | Supabase Realtime, message status (sending → sent → delivered → read) |
+| Blockchain metadata anchoring | Group metadata SHA-256 hash submitted to Stellar via self-payment memo |
+| On-chain group verification | Verify a room's metadata hash against its Stellar transaction |
+| Member management | View members, vote to remove members (majority threshold) |
+| Escrow system | Full lifecycle: create → fund → release / refund / dispute → resolve |
+| Rate limiting | Per-wallet message rate limiting with 429 responses |
+| Encrypted file references | API routes and DB schema for encrypted file metadata |
+| Responsive UI | Mobile-first design, dark/light mode |
+| WebSocket server | Real-time presence and typing indicators alongside Supabase Realtime |
+| CI pipeline | Lint + build on every pull request via GitHub Actions |
+
+### 🚧 Planned / not yet implemented
+
+| Feature | Notes |
+|---|---|
+| End-to-end message encryption | DB flag (`is_encrypted`) and schema exist; client-side encryption not wired up |
+| Encrypted file sharing (UI) | API routes exist; upload/download UI not built |
+| DAO-based moderation | Dispute resolution is currently manual; on-chain DAO voting not implemented |
+| Group ownership via Stellar accounts | Metadata anchoring works; full on-chain ownership model not implemented |
+| Mobile PWA | Responsive design works; PWA manifest not configured |
+| Message pagination UI | API supports cursor-based pagination; infinite scroll not built |
+| Test coverage reporting | Unit test file exists (`lib/auth/stellar-verify.test.ts`); no test runner (Jest/Vitest) is configured yet |
+
+---
+
+## 📸 Screenshots
+
+> Screenshots will be added once the live deployment is stable. To preview the UI locally, follow the [Getting Started](#️-getting-started) steps and open `http://localhost:3000`.
+
+**To contribute screenshots:**
+1. Run the app locally (`npm run dev`)
+2. Take screenshots of: landing page, wallet connect flow, chat room list, active chat, create group modal
+3. Save them to `public/screenshots/` and open a PR
 
 ---
 
 ## 🧩 Core Features
 
-### 🔒 Complete Anonymity
-
-* No usernames, emails, or profile data
-* No tracking or surveillance
-* Zero-knowledge architecture
-
-### 🔐 End-to-End Encryption
-
-* Messages are encrypted client-side
-* Only chat participants can read messages
-
-### 🌐 Decentralized Groups
-
-* Create or join anonymous chat rooms
-* No central authority or moderation bias
-
 ### 👛 Web3 Wallet Authentication
 
-* Login using a supported Web3 wallet
-* Wallet address acts as a **pseudonymous identity**
+Connect with any Stellar-compatible wallet (Freighter, xBull, Lobstr, etc.). The server issues a one-time nonce, your wallet signs it, and the signature is verified server-side using Ed25519 — no password ever touches the server.
 
-### ⚡ Lightning Fast Messaging
+### 🌐 Anonymous Chat Rooms
 
-* Real-time chat with minimal latency
+Create or join public chat rooms. Your wallet address is your pseudonymous identity. No display name, no avatar, no profile.
 
-### 🛡 Privacy First
+### ⭐ Stellar Blockchain Anchoring
 
-* No IP logging
-* No data selling or analytics exploitation
+When you create a group, its metadata is hashed (SHA-256) and submitted to the Stellar network as a self-payment transaction memo. Anyone can independently verify the group's integrity on-chain.
+
+### 🗳️ Wallet-Based Member Removal
+
+Room members can vote to remove another member. When a majority votes, the member is removed and can no longer send messages in that room.
+
+### 💰 Escrow System
+
+A full escrow lifecycle built on Stellar: create, fund (on-chain payment), release to beneficiary, refund to initiator, raise a dispute, or resolve it. No smart contracts — escrow state is tracked in Supabase and settled via Stellar payments from the service wallet.
 
 ---
 
 ## 🏗️ Tech Stack
 
-### Frontend
-
-* **Next.js / React**
-* **Tailwind CSS**
-* **Web3 Wallet Integration**
-
-### Blockchain
-
-* **Stellar Blockchain** ⭐
-* Wallet-based authentication
-* Public-key cryptography
-
-### Backend
-
-* Node.js / Serverless APIs
-* WebSocket / Real-time messaging
-* Encrypted message storage
-
-### Hosting
-
-* **Vercel**
+| Layer | Technology |
+|---|---|
+| Frontend | Next.js 16.0.10, React 19.2.0, TypeScript 5, Tailwind CSS 4 |
+| UI Components | Radix UI primitives (30+ components), shadcn/ui |
+| Web3 | Stellar Wallets Kit v1.9.5 (`@creit.tech/stellar-wallets-kit`) |
+| Auth | Supabase Auth + Stellar Ed25519 signature verification |
+| Database | Supabase (PostgreSQL) with Row-Level Security |
+| Real-time | Supabase Realtime + WebSocket server (ws v8.19.0) |
+| Blockchain | Stellar SDK v13.3.0 (`@stellar/stellar-sdk`) |
+| Rate limiting | Redis v4.7.0 (optional; falls back to in-memory) |
+| Hosting | Vercel |
+| CI/CD | GitHub Actions |
 
 ---
-
-## 🔐 Security Model
-
-* End-to-end encrypted messages
-* Zero-knowledge design
-* Decentralized architecture
-* Open-source codebase (auditable)
-* No identity or metadata storage
-
----
-
-
 
 ## 🏛️ Architecture
 
 ```mermaid
 flowchart TB
     subgraph Client["👤 Client"]
-        Wallet[Web3 Wallet]
+        Wallet[Stellar Wallet\nFreighter / xBull / Lobstr]
         Browser[Browser]
     end
 
-    subgraph Frontend["⚛️ Frontend (Next.js)"]
+    subgraph Frontend["⚛️ Next.js App"]
         UI[React Components]
-        Auth[Auth Module]
+        Auth[Wallet Auth Module]
         Chat[Chat Interface]
     end
 
-    subgraph Backend["🔧 Backend Services"]
-        Supabase[(Supabase)]
+    subgraph Backend["🔧 API Routes"]
+        AuthAPI[/api/auth]
+        RoomsAPI[/api/rooms]
+        MessagesAPI[/api/messages]
+        EscrowAPI[/api/escrow]
+        StellarAPI[/api/stellar]
+    end
+
+    subgraph Data["💾 Supabase"]
+        DB[(PostgreSQL)]
         Realtime[Realtime Engine]
+        RLS[Row-Level Security]
     end
 
-    subgraph Blockchain["⭐ Stellar"]
-        StellarNet[Stellar Network]
+    subgraph Blockchain["⭐ Stellar Network"]
+        Horizon[Horizon API]
+        Testnet[Testnet / Mainnet]
     end
 
-    Wallet -->|Sign Auth| Auth
+    Wallet -->|Sign nonce| Auth
     Browser --> UI
     UI --> Chat
-    Auth -->|Verify| Supabase
-    Chat -->|Messages| Realtime
-    Realtime -->|Sync| Supabase
-    Auth -.->|Wallet Auth| StellarNet
+    Auth --> AuthAPI
+    Chat --> MessagesAPI
+    Chat --> RoomsAPI
+    RoomsAPI --> StellarAPI
+    EscrowAPI --> Horizon
+    StellarAPI --> Horizon
+    AuthAPI --> DB
+    MessagesAPI --> Realtime
+    Realtime --> DB
+    DB --> RLS
 ```
-
-| Layer | Technology |
-|-------|------------|
-| Frontend | Next.js 16, React 19, TypeScript, Tailwind CSS |
-| Auth | Supabase Auth + Web3 Wallet |
-| Database | Supabase (PostgreSQL) |
-| Real-time | Supabase Realtime |
-| Blockchain | Stellar Network |
-| Hosting | Vercel |
 
 ---
 
-## 🛠️ Quick Start
+## 🛠️ Getting Started
 
 ### Prerequisites
 
-* Node.js >= 18.x
-* pnpm (recommended)
-* [Supabase account](https://supabase.com)
+- **Node.js** >= 20.9.0 — [nodejs.org](https://nodejs.org)
+- **npm** (bundled with Node) or **pnpm** >= 8
+- **Supabase account** — [supabase.com](https://supabase.com) (free tier works)
+- **Stellar testnet account** — create and fund one at [Stellar Laboratory](https://laboratory.stellar.org/#account-creator?network=test)
+- **Freighter wallet** browser extension — [freighter.app](https://freighter.app) (for testing auth)
 
-### Setup
+### 1. Clone and install
 
 ```bash
-# 1. Clone and install
-git clone https://github.com/your-username/anonchat.git
+git clone https://github.com/pugsley76/AnonChat.git
 cd AnonChat
-pnpm install
-
-# 2. Configure environment
-cp .env.example .env.local
-# Edit .env.local with your Supabase credentials
-
-# 3. Run database migrations in Supabase SQL Editor
-# scripts/001_create_profiles.sql
-# scripts/002_create_profile_trigger.sql
-# scripts/003_room_members_and_removal_votes.sql  (for wallet-based removal voting)
-
-# 4. Start dev server
-pnpm dev
+npm install
 ```
 
-### Testing wallet-based removal voting
+> `pnpm install` also works if you prefer pnpm.
 
-**Full runbook:** See [docs/RUN-VOTE-REMOVE.md](docs/RUN-VOTE-REMOVE.md) for step-by-step run and verify instructions.
+### 2. Create a Supabase project
 
-1. **Apply the migration**  
-   Run `scripts/003_room_members_and_removal_votes.sql` in the Supabase SQL Editor so `room_members`, `room_removal_votes`, and `check_removal_threshold` exist.
+1. Go to [supabase.com](https://supabase.com) and create a new project.
+2. In **Settings → API**, copy:
+   - **Project URL** → `NEXT_PUBLIC_SUPABASE_URL`
+   - **anon / public key** → `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+   - **service_role key** → `SUPABASE_SERVICE_ROLE_KEY`
 
-2. **API smoke test** (Node ≥18, dev server on Node ≥20):  
-   With the dev server running (`pnpm dev`), in another terminal:
-   ```bash
-   pnpm run test:vote-remove
-   ```
-   This checks that unauthenticated requests get 401 and invalid requests get 400.
+### 3. Configure environment variables
 
-3. **Manual UI test**  
-   Open `/chat`, select a room, click the ⋮ (More) button in the header. The “Room members & voting” dialog should open; without auth you’ll see “No members yet, or you need to sign in.” After signing in and joining a room (e.g. by sending a message), you can vote to remove another member; when a majority votes, they are removed and can no longer send messages in that room.
+Copy the example file and fill in your values:
 
-### Environment Variables
+```bash
+cp .env.example .env.local
+```
+
+Then edit `.env.local`:
 
 ```env
-NEXT_PUBLIC_SUPABASE_URL=your-project-url
+# Supabase (required)
+NEXT_PUBLIC_SUPABASE_URL=https://your-project-id.supabase.co
 NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
+SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
+
+# Stellar (required for blockchain features)
+STELLAR_NETWORK=testnet
+STELLAR_SOURCE_SECRET=S...your-testnet-secret-key...
+STELLAR_HORIZON_URL=https://horizon-testnet.stellar.org
+STELLAR_TRANSACTION_TIMEOUT=30000
+
+# App
 NEXT_PUBLIC_STELLAR_NETWORK=testnet
 NEXT_PUBLIC_APP_NAME=AnonChat
+
+# Redis (optional — rate limiting falls back to in-memory without this)
+# REDIS_URL=redis://localhost:6379
 ```
 
-> Find credentials in Supabase Dashboard → Settings → API
+> **Never commit `.env.local`** — it is already in `.gitignore`.  
+> For `STELLAR_SOURCE_SECRET`, create a funded testnet account at [Stellar Laboratory](https://laboratory.stellar.org/#account-creator?network=test) and fund it via Friendbot.
+
+### 4. Run database migrations
+
+The `scripts/` folder contains 15 SQL migration files. Run them in the order below — the numeric prefix determines the order, but note that some share the same prefix and must both be applied.
+
+**Option A — Supabase SQL Editor** (Dashboard → SQL Editor → New query):
+
+Run each file in this order:
+
+```
+scripts/001_create_profiles.sql
+scripts/002_create_profile_trigger.sql
+scripts/003_create_invites.sql
+scripts/003_add_blockchain_fields.sql
+scripts/003_room_members_and_removal_votes.sql
+scripts/004_create_room_members.sql
+scripts/005_add_last_read_to_room_members.sql
+scripts/006_unread_view.sql
+scripts/007_create_group_membership.sql
+scripts/007_secure_messages_rls.sql
+scripts/008_create_groups.sql
+scripts/009_encrypted_file_references.sql
+scripts/010_message_status.sql
+scripts/011_group_tx_memo_map.sql
+scripts/012_escrow_tables.sql
+```
+
+**Option B — psql** (if you have direct database access):
+
+```bash
+export DATABASE_URL="postgresql://postgres:<password>@<host>:5432/postgres"
+
+for f in \
+  scripts/001_create_profiles.sql \
+  scripts/002_create_profile_trigger.sql \
+  scripts/003_create_invites.sql \
+  scripts/003_add_blockchain_fields.sql \
+  scripts/003_room_members_and_removal_votes.sql \
+  scripts/004_create_room_members.sql \
+  scripts/005_add_last_read_to_room_members.sql \
+  scripts/006_unread_view.sql \
+  scripts/007_create_group_membership.sql \
+  scripts/007_secure_messages_rls.sql \
+  scripts/008_create_groups.sql \
+  scripts/009_encrypted_file_references.sql \
+  scripts/010_message_status.sql \
+  scripts/011_group_tx_memo_map.sql \
+  scripts/012_escrow_tables.sql; do
+  psql "$DATABASE_URL" -f "$f"
+done
+```
+
+> The Supabase connection string is in your project: **Settings → Database → Connection string**.
+
+### 5. Start the development server
+
+```bash
+# Next.js only (port 3000)
+npm run dev
+
+# Next.js + WebSocket server (ports 3000 and 3001)
+npm run dev:all
+```
+
+Open [http://localhost:3000](http://localhost:3000).
+
+### 6. Verify the setup
+
+1. Click **Connect** in the header.
+2. Approve the connection in Freighter.
+3. Sign the authentication message when prompted.
+4. Your wallet address should appear in the header — that confirms auth is working.
+5. Navigate to `/chat` and create a group. You'll see the estimated Stellar network fee before confirming.
 
 ---
 
-## 🧪 Roadmap
+## 🧪 Testing
 
-* [ ] Group ownership via Stellar accounts
-* [ ] On-chain group identity
-* [ ] DAO-based moderation
-* [ ] Encrypted file sharing
-* [ ] Mobile PWA support
+There is no automated test runner configured yet. The following commands are available:
+
+```bash
+# ESLint — catches code quality issues
+npm run lint
+
+# TypeScript compilation — catches type errors across the whole project
+npm run build
+
+# WebSocket connectivity check — requires the WS server to be running
+npm test
+
+# API smoke tests for member removal voting — requires a running dev server
+npm run test:vote-remove
+```
+
+A unit test file exists at `lib/auth/stellar-verify.test.ts` (covers Ed25519 signature verification and nonce management) but requires a test runner (Jest or Vitest) to be wired up. See the [roadmap](#️-roadmap) — adding a proper test runner and CI coverage reporting is a planned improvement.
+
+The CI pipeline (`.github/workflows/ci.yml`) runs `npm run lint` and `npm run build` on every pull request.
+
+---
+
+## 🐳 Docker
+
+```bash
+docker build -t anonchat .
+docker run -p 3000:3000 --env-file .env.local anonchat
+```
+
+---
+
+## 🗺️ Roadmap
+
+- [ ] Client-side end-to-end message encryption
+- [ ] Encrypted file sharing (upload/download UI)
+- [ ] DAO-based moderation (on-chain dispute resolution)
+- [ ] Group ownership via Stellar accounts
+- [ ] Mobile PWA support
+- [ ] Message pagination UI (infinite scroll)
+- [ ] Wire up Jest/Vitest test runner and add CI coverage reporting
+- [ ] Screenshots in README
+
+---
+
+## 📖 Documentation
+
+- **[User Guide](docs/user-guide.md)** — Installing Freighter, funding a testnet account, connecting, creating groups, and chatting.
+- **[Setup Guide](SETUP.md)** — Detailed local development setup.
+- **[Contributing](CONTRIBUTING.md)** — How to contribute.
+- **[WebSocket Integration](WEBSOCKET_INTEGRATION.md)** — WebSocket server architecture and message protocol.
+- **[WebSocket Examples](WEBSOCKET_EXAMPLES.md)** — Code examples for connecting to the WebSocket server.
+- **[Database Migrations](scripts/MIGRATIONS_README.md)** — Migration notes (note: this file lists only migrations up to 007; the full list is in this README).
 
 ---
 
 ## 🤝 Contributing
 
-See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines. Quick steps:
+See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
 
-1. Fork → Create branch `fix-[issue-number]` → Make changes → Test → PR
-2. **Important**: Only submit PRs for issues you're assigned to
+1. Fork → create a branch: `fix/issue-number` or `feat/description`
+2. Make changes → run `npm run lint` and `npm run build`
+3. Open a PR — only submit PRs for issues you're assigned to
 
 ---
 
 ## 📜 License
 
-This project is licensed under the **MIT License**.
-
----
-
-## 🌐 Live Demo
-
-🔗 [https://anonchat-one.vercel.app](https://anonchat-one.vercel.app)
+MIT — see [LICENSE](LICENSE).
 
 ---
 
 ## 💜 Credits
 
-Built with privacy in mind and powered by **Stellar Blockchain**.
+Built with privacy in mind, powered by the **Stellar Blockchain**.
 
 > If you believe communication should be free, anonymous, and decentralized — AnonChat is for you.
 
----
-
-### ⭐ Don’t forget to star the repository if you like the project!
+⭐ Star the repo if you find it useful!
